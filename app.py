@@ -48,21 +48,24 @@ def predict():
     input_params[2] = tummy_map[tummy_shape]
     input_features = pd.DataFrame([input_params],columns=cols)
     input_scaled = FeatureScaler.transform(input_features)
-    pred_value = SizeFitModel.predict(input_scaled)
+    pred_proba = SizeFitModel.predict_proba(input_scaled)
     
+    pred_sorted = sorted(zip(pred_proba[0], list(range(5))), reverse=True)
+    pred_size = pred_sorted[0][1]
+        
     input_params[2] = tummy_map['Average']
     input_features = pd.DataFrame([input_params],columns=cols)
     input_scaled = FeatureScaler.transform(input_features)
-    pred_value_base = SizeFitModel.predict(input_scaled)
+    pred_size_base = SizeFitModel.predict(input_scaled)
         
-    if tummy_map[tummy_shape]==2 and pred_value[0]<pred_value_base[0]:
-        pred_value[0]=pred_value_base[0]
-    elif tummy_map[tummy_shape]==0 and pred_value[0]>pred_value_base[0]:
-        pred_value[0]=pred_value_base[0]
+    if tummy_map[tummy_shape]==2 and pred_size<pred_size_base[0]:
+        pred_size = pred_value_base[0]
+    elif tummy_map[tummy_shape]==0 and pred_size>pred_value_base[0]:
+        pred_size = pred_value_base[0]
     
-    pred_pref = size_pref_correction(pred_value[0],size_preference,corr_factors)
+    pred_pref = size_pref_correction(pred_size, size_preference, corr_factors)
     
-    return render_template('index.html', prediction_text1='Recommended size is: {}'.format(pred_map[pred_value[0]]),
+    return render_template('index.html', prediction_text1='Recommended size is: {}'.format(pred_map[pred_size]),
                            prediction_text2='Recommended size based on size preference is: {}'.format(pred_map[pred_pref]))
 
 if __name__ == "__main__":
